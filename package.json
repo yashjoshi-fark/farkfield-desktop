@@ -1,6 +1,6 @@
 {
   "name": "farkfield-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Farkfield desktop creative studio",
   "author": "Farkfield",
   "private": true,
@@ -13,6 +13,7 @@
     "directories": { "output": "release" },
     "files": ["main.cjs", "preload.cjs", "package.json"],
     "asar": true,
+    "afterPack": "afterPack.cjs",
     "win": { "target": ["nsis", "portable"], "signAndEditExecutable": false },
     "nsis": { "artifactName": "Farkfield-Setup-${arch}.${ext}", "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true },
     "portable": { "artifactName": "Farkfield-Portable-${arch}.${ext}" },

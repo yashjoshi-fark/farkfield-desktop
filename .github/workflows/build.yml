@@ -32,6 +32,14 @@ jobs:
           node-version: '22'
       - run: npm ci
       - run: npm run ${{ matrix.script }}
+      - name: Verify the macOS app signature
+        if: matrix.name == 'macos'
+        shell: bash
+        run: |
+          shopt -s nullglob
+          apps=(release/mac*/Farkfield.app)
+          test ${#apps[@]} -gt 0
+          for app in "${apps[@]}"; do codesign --verify --deep --strict --verbose=2 "$app"; done
       - name: Record checksums
         shell: bash
         run: |
@@ -52,3 +60,4 @@ jobs:
           shopt -s nullglob
           files=(release/*.exe release/*.dmg release/*.zip release/SHA256SUMS-*.txt)
           gh release upload "$TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+
