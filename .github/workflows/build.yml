@@ -1,0 +1,54 @@
+﻿name: Build Farkfield desktop apps
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, for example v0.1.0
+        required: true
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, script: 'build:windows', name: windows }
+          - { os: macos-latest, script: 'build:mac', name: macos }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run ${{ matrix.script }}
+      - name: Record checksums
+        shell: bash
+        run: |
+          node -e "
+            const fs=require('fs'),c=require('crypto');
+            const files=fs.readdirSync('release').filter(f=>/\.(exe|dmg|zip)$/.test(f));
+            if(!files.length) throw new Error('no installers were produced');
+            fs.writeFileSync('release/SHA256SUMS-${{ matrix.name }}.txt', files.map(f=>c.createHash('sha256').update(fs.readFileSync('release/'+f)).digest('hex')+'  '+f).join('\n')+'\n');
+          "
+          cat release/SHA256SUMS-${{ matrix.name }}.txt
+      - name: Publish to the release
+        shell: bash
+        run: |
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Farkfield $TAG" \
+                 --notes "Unsigned test build of the Farkfield desktop app. Windows SmartScreen or macOS Gatekeeper may warn about an unknown publisher. SHA-256 checksums are attached." \
+            || sleep 8
+          shopt -s nullglob
+          files=(release/*.exe release/*.dmg release/*.zip release/SHA256SUMS-*.txt)
+          gh release upload "$TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --clobber
