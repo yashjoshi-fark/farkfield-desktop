@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('farkfieldDesktop', Object.freeze({
   signIn: () => ipcRenderer.invoke('farkfield:sign-in'),
-  version: '0.1.1',
+  saveAsset: (asset) => ipcRenderer.invoke('farkfield:save-asset', asset),
+  version: '0.1.3',
 }));

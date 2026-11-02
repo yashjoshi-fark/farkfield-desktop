@@ -1,22 +1,58 @@
 {
-  "name": "farkfield-desktop",
-  "version": "0.1.1",
-  "description": "Farkfield desktop creative studio",
-  "author": "Farkfield",
+  "name": "ai-nstein-desktop",
+  "version": "0.1.3",
+  "description": "AI-NSTEIN desktop creative studio",
+  "author": "AI-NSTEIN",
   "private": true,
   "main": "main.cjs",
-  "scripts": { "start": "electron .", "build:windows": "electron-builder --win nsis portable --x64 --publish never", "build:mac": "electron-builder --mac dmg zip --arm64 --x64 --publish never" },
-  "devDependencies": { "electron": "45.1.0", "electron-builder": "26.18.0" },
+  "scripts": {
+    "start": "electron .",
+    "build:windows": "electron-builder --win nsis portable --x64 --publish never",
+    "build:mac": "electron-builder --mac dmg zip --arm64 --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.1.0",
+    "electron-builder": "26.18.0"
+  },
   "build": {
-    "appId": "in.co.fark.farkfield",
-    "productName": "Farkfield",
-    "directories": { "output": "release" },
-    "files": ["main.cjs", "preload.cjs", "package.json"],
+    "appId": "com.ai-nstein.desktop",
+    "productName": "AI-NSTEIN",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "package.json"
+    ],
     "asar": true,
     "afterPack": "afterPack.cjs",
-    "win": { "target": ["nsis", "portable"], "signAndEditExecutable": false },
-    "nsis": { "artifactName": "Farkfield-Setup-${arch}.${ext}", "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true },
-    "portable": { "artifactName": "Farkfield-Portable-${arch}.${ext}" },
-    "mac": { "target": ["dmg", "zip"], "artifactName": "Farkfield-macOS-${arch}.${ext}", "identity": null, "category": "public.app-category.graphics-design" }
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "artifactName": "AI-NSTEIN-Setup-${arch}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "AI-NSTEIN-Portable-${arch}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "artifactName": "AI-NSTEIN-macOS-${arch}.${ext}",
+      "identity": null,
+      "category": "public.app-category.graphics-design"
+    }
   }
 }

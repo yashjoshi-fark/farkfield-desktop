@@ -1,4 +1,4 @@
-﻿name: Build Farkfield desktop apps
+﻿name: Build AI-NSTEIN desktop apps
 on:
   workflow_dispatch:
     inputs:
@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           shopt -s nullglob
-          apps=(release/mac*/Farkfield.app)
+          apps=(release/mac*/*.app)
           test ${#apps[@]} -gt 0
           for app in "${apps[@]}"; do codesign --verify --deep --strict --verbose=2 "$app"; done
       - name: Record checksums
@@ -54,8 +54,8 @@ jobs:
         shell: bash
         run: |
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
-            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Farkfield $TAG" \
-                 --notes "Unsigned test build of the Farkfield desktop app. Windows SmartScreen or macOS Gatekeeper may warn about an unknown publisher. SHA-256 checksums are attached." \
+            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "AI-NSTEIN Desktop $TAG" \
+                 --notes "Unsigned build of the AI-NSTEIN desktop app. Windows SmartScreen or macOS Gatekeeper may warn about an unknown publisher. SHA-256 checksums are attached." \
             || sleep 8
           shopt -s nullglob
           files=(release/*.exe release/*.dmg release/*.zip release/SHA256SUMS-*.txt)

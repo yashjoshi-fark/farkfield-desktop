@@ -4,6 +4,7 @@ const crypto = require('node:crypto');
 const ORIGIN = 'https://farkfield.vercel.app';
 let win;
 let signingIn = false;
+const localLibrary = () => path.join(app.getPath('documents'), 'AI-NSTEIN Library');
 const allowed = (value) => { try { return new URL(value).origin === ORIGIN; } catch { return false; } };
 const external = (value) => { try { const u = new URL(value); if (['https:', 'mailto:'].includes(u.protocol)) void shell.openExternal(u.href); } catch {} };
 
@@ -12,14 +13,19 @@ if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
   app.whenReady().then(() => {
-    win = new BrowserWindow({ width: 1440, height: 960, minWidth: 850, minHeight: 650, title: 'Farkfield', backgroundColor: '#0f1113',
+    win = new BrowserWindow({ width: 1440, height: 960, minWidth: 850, minHeight: 650, title: 'AI-NSTEIN', backgroundColor: '#f1f1f1',
       webPreferences: { preload: path.join(__dirname, 'preload.cjs'), partition: 'persist:farkfield', nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true } });
+    // Marks requests originating in the installed shell. The server still
+    // validates the signed-in account and never accepts this before login.
+    win.webContents.session.webRequest.onBeforeSendHeaders({ urls: [`${ORIGIN}/*`] }, (details, callback) => {
+      callback({ requestHeaders: { ...details.requestHeaders, 'X-AI-NSTEIN-Desktop': '1' } });
+    });
     win.setMenuBarVisibility(false);
     win.webContents.setWindowOpenHandler(({ url }) => { external(url); return { action: 'deny' }; });
     win.webContents.on('will-navigate', (event, url) => { if (!allowed(url)) { event.preventDefault(); external(url); } });
     win.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
     win.webContents.on('did-fail-load', (_event, code, _description, _url, mainFrame) => {
-      if (mainFrame && code !== -3) dialog.showMessageBox(win, { type: 'error', message: 'Could not connect to Farkfield', detail: 'Check your internet connection and restart the app.' });
+      if (mainFrame && code !== -3) dialog.showMessageBox(win, { type: 'error', message: 'Could not connect to AI-NSTEIN', detail: 'Check your internet connection and restart the app.' });
     });
     void win.loadURL(ORIGIN);
   });
@@ -50,6 +56,27 @@ else {
       }
       throw new Error('Sign-in timed out. Please try again.');
     } finally { signingIn = false; }
+  });
+  ipcMain.handle('farkfield:save-asset', async (event, asset) => {
+    if (!win || event.sender !== win.webContents) throw new Error('Invalid local save request');
+    const source = typeof asset?.url === 'string' ? asset.url : '';
+    const parsed = new URL(source, ORIGIN);
+    if (parsed.origin !== ORIGIN || !/^\/api\/assets\/[^/]+\/content$/.test(parsed.pathname)) throw new Error('Invalid asset URL');
+    const extension = String(asset?.mime || '').startsWith('video/') ? 'mp4' : String(asset?.mime || '').startsWith('image/webp') ? 'webp' : 'png';
+    const name = `AI-NSTEIN-${String(asset?.id || 'result').replace(/[^a-zA-Z0-9_-]/g, '')}.${extension}`;
+    const folder = localLibrary();
+    const destination = path.join(folder, name);
+    require('node:fs').mkdirSync(folder, { recursive: true });
+    return new Promise((resolve, reject) => {
+      const session = event.sender.session;
+      const timeout = setTimeout(() => reject(new Error('Local save timed out')), 60_000);
+      session.once('will-download', (_downloadEvent, item) => {
+        clearTimeout(timeout);
+        item.setSavePath(destination);
+        item.once('done', (_itemEvent, state) => state === 'completed' ? resolve({ path: destination }) : reject(new Error('Local save failed')));
+      });
+      event.sender.downloadURL(parsed.href);
+    });
   });
   app.on('window-all-closed', () => app.quit());
 }
