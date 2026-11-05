@@ -1,7 +1,8 @@
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const ORIGIN = 'https://farkfield.vercel.app';
+// The domain registered with Razorpay, so in-app payments are accepted. (Releases before this one load farkfield.vercel.app.)
+const ORIGIN = 'https://ainstein.quinncraft.in';
 let win;
 let signingIn = false;
 const localLibrary = () => path.join(app.getPath('documents'), 'AI-NSTEIN Library');
