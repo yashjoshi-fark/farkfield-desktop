@@ -1,6 +1,6 @@
 {
   "name": "ai-nstein-desktop",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "AI-NSTEIN desktop creative studio",
   "author": "AI-NSTEIN",
   "private": true,
@@ -23,6 +23,7 @@
     "files": [
       "main.cjs",
       "preload.cjs",
+      "icon.png",
       "package.json"
     ],
     "asar": true,

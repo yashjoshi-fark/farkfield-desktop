@@ -14,7 +14,7 @@ if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
   app.whenReady().then(() => {
-    win = new BrowserWindow({ width: 1440, height: 960, minWidth: 850, minHeight: 650, title: 'AI-NSTEIN', backgroundColor: '#f1f1f1',
+    win = new BrowserWindow({ width: 1440, height: 960, minWidth: 850, minHeight: 650, title: 'AI-NSTEIN', icon: path.join(__dirname, 'icon.png'), backgroundColor: '#f1f1f1',
       webPreferences: { preload: path.join(__dirname, 'preload.cjs'), partition: 'persist:farkfield', nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true } });
     // Marks requests originating in the installed shell. The server still
     // validates the signed-in account and never accepts this before login.
