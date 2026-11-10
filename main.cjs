@@ -71,11 +71,18 @@ else {
     return new Promise((resolve, reject) => {
       const session = event.sender.session;
       const timeout = setTimeout(() => reject(new Error('Local save timed out')), 60_000);
-      session.once('will-download', (_downloadEvent, item) => {
+      // The listener removes itself once it has claimed a download, so two saves at once cannot share one
+      // (which left the other download with no destination, and Windows asked where to save it).
+      let claimed = false;
+      const claim = (_downloadEvent, item) => {
+        if (claimed) return;
+        claimed = true;
+        session.removeListener('will-download', claim);
         clearTimeout(timeout);
         item.setSavePath(destination);
         item.once('done', (_itemEvent, state) => state === 'completed' ? resolve({ path: destination }) : reject(new Error('Local save failed')));
-      });
+      };
+      session.on('will-download', claim);
       event.sender.downloadURL(parsed.href);
     });
   });
